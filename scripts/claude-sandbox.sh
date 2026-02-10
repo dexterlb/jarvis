@@ -46,9 +46,4 @@ if [ -f "$HOME/.claude.json" ]; then
     bwrap_args+=(--bind "$HOME/.claude.json" "$HOME/.claude.json")
 fi
 
-# Add project-level .claude directory if it exists
-if [ -d "./.claude" ]; then
-    bwrap_args+=(--bind "$cdir/.claude" "$cdir/.claude")
-fi
-
 exec bwrap "${bwrap_args[@]}" bash "${claude_exe}" "--dangerously-skip-permissions" "${@}"

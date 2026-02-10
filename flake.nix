@@ -19,8 +19,20 @@
         };
         lib = pkgs.lib;
         jarvisDeps = [
-          pkgs.firejail
+          pkgs.bubblewrap
+          pkgs.bash
+          pkgs.which
           pkgs.claude-code
+        ];
+        shellDeps = [
+          pkgs.nix
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.inetutils
+          pkgs.ps
+          pkgs.gnugrep
+          pkgs.gnused
+          pkgs.openssh
         ];
         jarvisPkg = pkgs.stdenvNoCC.mkDerivation {
           name = "jarvis";
@@ -46,7 +58,7 @@
               exit 1
             fi
 
-            export PATH="${jarvisPkg}/bin:$PATH"
+            export PATH="${lib.makeBinPath (shellDeps ++ [ jarvisPkg ])}"
 
             cd "$1"
 

@@ -6,39 +6,49 @@ cdir="$(pwd)"
 
 claude_exe="$(readlink -f $(which claude))"
 
-firejail_args=(
-    --noprofile             # no default settings
+bwrap_args=(
+    --unshare-all
+    --share-net
 
-    --private-tmp
-    --noroot
-    --caps.drop=all
-    --nonewprivs
-    --nogroups
+    --cap-drop ALL
+    --die-with-parent
+    --new-session
 
-    # Filesystem access - whitelist specific paths only
-    --whitelist=/nix/store
-    --read-only=/nix/store
-    --whitelist="$cdir"
-    --read-write="$cdir"
+    --uid "$(id -u)"
+    --gid "$(id -g)"
+
+    --ro-bind /nix/store /nix/store
+    --ro-bind /etc/nsswitch.conf /etc/nsswitch.conf
+    --ro-bind /etc/protocols /etc/protocols
+    --ro-bind /etc/services /etc/services
+    --ro-bind /etc/hosts /etc/hosts
+    --ro-bind /etc/resolv.conf /etc/resolv.conf
+    --ro-bind /etc/ssl /etc/ssl
+    --ro-bind /etc/ca-certificates /etc/ca-certificates
+    --ro-bind "$(which bash)" /bin/bash
+    --ro-bind "$(which sh)" /bin/sh
+
+    --tmpfs /tmp
+
+    --bind "${cdir}" "${cdir}"
+    --chdir "${cdir}"
+
+    --proc /proc
+    --dev /dev
 )
 
 # Add Claude configuration access if files/directories exist
 if [ -d "$HOME/.claude" ]; then
-    firejail_args+=(--whitelist="$HOME/.claude")
-    firejail_args+=(--read-write="$HOME/.claude")
+    bwrap_args+=(--bind "$HOME/.claude" "$HOME/.claude")
 fi
 
 if [ -f "$HOME/.claude.json" ]; then
-    firejail_args+=(--whitelist="$HOME/.claude.json")
-    firejail_args+=(--read-write="$HOME/.claude.json")
+    bwrap_args+=(--bind "$HOME/.claude.json" "$HOME/.claude.json")
 fi
 
 # Add project-level .claude directory if it exists
 if [ -d "./.claude" ]; then
-    firejail_args+=(--whitelist="$cdir/.claude")
-    firejail_args+=(--read-write="$cdir/.claude")
+    bwrap_args+=(--bind "$cdir/.claude" "$cdir/.claude")
 fi
 
-# firejail_args+=(--net=none)  # Uncomment to disable network access
-
-exec firejail "${firejail_args[@]}" bash "${claude_exe}" "--dangerously-skip-permissions" "${@}"
+exec bwrap "${bwrap_args[@]}" bash "${claude_exe}" "--dangerously-skip-permissions" "${@}"

@@ -4,7 +4,7 @@ set -euo pipefail
 
 cdir="$(pwd)"
 
-claude_exe="$(readlink -f $(which claude))"
+tool_exe="$(readlink -f $(which pi-coding-agent))"
 
 bwrap_args=(
     --unshare-all
@@ -25,9 +25,7 @@ bwrap_args=(
     --ro-bind /etc/resolv.conf /etc/resolv.conf
     --ro-bind /etc/ssl /etc/ssl
     --ro-bind /etc/ca-certificates /etc/ca-certificates
-    --ro-bind "$(which bash)" /bin/bash
     --ro-bind "$(which sh)" /bin/sh
-    --ro-bind "$(which env)" /usr/bin/env
 
     --tmpfs /tmp
 
@@ -38,13 +36,10 @@ bwrap_args=(
     --dev /dev
 )
 
-# Add Claude configuration access if files/directories exist
-if [ -d "$HOME/.claude" ]; then
-    bwrap_args+=(--bind "$HOME/.claude" "$HOME/.claude")
-fi
+# if ! [[ -d "$HOME/.config/pi-coding-agent" ]]; then
+#     echo "~/.config/pi-coding-agent does not exist"
+# fi
+# bwrap_args+=(--bind "$HOME/.config/pi-coding-agent" "$HOME/.config/pi-coding-agent")
+export SHELL="$(which bash)"
 
-if [ -f "$HOME/.claude.json" ]; then
-    bwrap_args+=(--bind "$HOME/.claude.json" "$HOME/.claude.json")
-fi
-
-exec bwrap "${bwrap_args[@]}" "${claude_exe}" "--dangerously-skip-permissions" "${@}"
+exec bwrap "${bwrap_args[@]}" "${tool_exe}" "${@}"

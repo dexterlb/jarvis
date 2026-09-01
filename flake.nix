@@ -22,6 +22,7 @@
           pkgs.bubblewrap
           pkgs.bash
           pkgs.which
+          pkgs.pi-coding-agent
           pkgs.claude-code
         ];
         shellDeps = [
@@ -59,6 +60,8 @@
             fi
 
             export PATH="${lib.makeBinPath (shellDeps ++ [ jarvisPkg ])}"
+            # FIXME: specify deps from the outside
+            # export LD_LIBRARY_PATH="${lib.makeLibraryPath [ pkgs.stdenv.cc.cc pkgs.libz ]}"
 
             cd "$1"
 
@@ -75,6 +78,22 @@
             type = "app";
             program = "${shellLauncher}/bin/jarvis-shell";
           };
+        };
+        lib = {
+          mk-jarvis = { workdir, runtime-deps, lib-deps }: pkgs.writeShellApplication {
+            name = "jarvis";
+            runtimeInputs = runtime-deps;
+            text = ''
+              if [[ $# -ne 0 ]]; then
+                echo "this script expects no arguments"
+                exit 1
+              fi
+              export LD_LIBRARY_PATH="${lib.makeLibraryPath lib-deps}"
+
+              cd "${workdir}"
+
+              ${jarvisPkg}/bin/jarvis
+            ''
         };
         formatter = pkgs.nixfmt-tree;
       }

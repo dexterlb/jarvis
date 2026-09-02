@@ -84,16 +84,13 @@
             name = "jarvis";
             runtimeInputs = runtime-deps;
             text = ''
-              if [[ $# -ne 0 ]]; then
-                echo "this script expects no arguments"
-                exit 1
-              fi
               export LD_LIBRARY_PATH="${lib.makeLibraryPath lib-deps}"
 
               cd "${workdir}"
 
-              ${jarvisPkg}/bin/jarvis
+              ${jarvisPkg}/bin/jarvis "''${@}"
             '';
+          };
         };
         formatter = pkgs.nixfmt-tree;
       }

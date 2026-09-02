@@ -31,20 +31,22 @@ bwrap_args=(
 
     --tmpfs /tmp
 
-    --bind "${cdir}" "${cdir}"
-    --chdir "${cdir}"
+    --bind "${cdir}" "${JARVIS_SANDBOX_DIR}"
+    --chdir "${JARVIS_SANDBOX_DIR}"
 
     --proc /proc
     --dev /dev
 )
 
-# Add Claude configuration access if files/directories exist
-if [ -d "$HOME/.claude" ]; then
-    bwrap_args+=(--bind "$HOME/.claude" "$HOME/.claude")
+if [[ ! -d "$JARVIS_STORAGE_DIR/.claude" ]]; then
+    mkdir -p "$JARVIS_STORAGE_DIR/.claude"
 fi
 
-if [ -f "$HOME/.claude.json" ]; then
-    bwrap_args+=(--bind "$HOME/.claude.json" "$HOME/.claude.json")
+if [[ ! -f "$JARVIS_STORAGE_DIR/.claude.json" ]]; then
+    touch "$JARVIS_STORAGE_DIR/.claude.json"
 fi
+
+bwrap_args+=(--bind "$JARVIS_STORAGE_DIR/.claude" "$HOME/.claude")
+bwrap_args+=(--bind "$JARVIS_STORAGE_DIR/.claude.json" "$HOME/.claude.json")
 
 exec bwrap "${bwrap_args[@]}" "${claude_exe}" "--dangerously-skip-permissions" "${@}"

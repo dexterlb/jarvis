@@ -93,7 +93,7 @@
               cd "${workdir}"
 
               ${jarvisPkg}/bin/jarvis
-            ''
+            '';
         };
         formatter = pkgs.nixfmt-tree;
       }

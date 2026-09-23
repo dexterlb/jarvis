@@ -22,19 +22,18 @@
           pkgs.bubblewrap
           pkgs.bash
           pkgs.which
-          pkgs.pi-coding-agent
-          pkgs.claude-code
         ];
-        shellDeps = [
-          pkgs.nix
-          pkgs.bash
-          pkgs.coreutils
-          pkgs.inetutils
-          pkgs.ps
-          pkgs.gnugrep
-          pkgs.gnused
-          pkgs.openssh
-        ];
+        toolDeps = {
+          claude = [
+            pkgs.claude-code
+          ];
+          pi = [
+            pkgs.pi-coding-agent
+          ];
+          goose = [
+            pkgs.goose-cli
+          ];
+        };
         toolPkg = name: pkgs.stdenvNoCC.mkDerivation {
           inherit name;
           src = ./scripts;
@@ -47,18 +46,16 @@
             mkdir -p $out/bin
             install -m 755 ${name}-sandbox.sh $out/bin/jarvis
             wrapProgram $out/bin/jarvis --prefix PATH : \
-              ${lib.makeBinPath jarvisDeps}
+              ${lib.makeBinPath (jarvisDeps ++ toolDeps."${name}")}
           '';
         };
       in
       {
         lib = {
-          mk-jarvis = { workdir, runtime-deps, lib-deps, tool }: pkgs.writeShellApplication {
+          mk-jarvis = { workdir, runtime-deps, tool }: pkgs.writeShellApplication {
             name = "sandboxed-${tool}";
             runtimeInputs = runtime-deps;
             text = ''
-              export LD_LIBRARY_PATH="${lib.makeLibraryPath lib-deps}"
-
               cd "${workdir}"
 
               ${toolPkg tool}/bin/jarvis "''${@}"

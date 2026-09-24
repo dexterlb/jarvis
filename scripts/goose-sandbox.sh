@@ -18,6 +18,7 @@ bwrap_args=(
     --gid "$(id -g)"
 
     --ro-bind /nix/store /nix/store
+    --ro-bind /etc/nix /etc/nix
     --ro-bind /etc/nsswitch.conf /etc/nsswitch.conf
     --ro-bind /etc/protocols /etc/protocols
     --ro-bind /etc/services /etc/services
@@ -38,10 +39,16 @@ bwrap_args=(
     --dev /dev
 )
 
-if [[ ! -d "$JARVIS_STORAGE_DIR/config-goose" ]]; then
-    mkdir -p "$JARVIS_STORAGE_DIR/config-goose"
-fi
+function add_goose_dir {
+    if [[ ! -d "$JARVIS_STORAGE_DIR/${2}" ]]; then
+        mkdir -p "$JARVIS_STORAGE_DIR/${2}"
+    fi
 
-bwrap_args+=(--bind "$JARVIS_STORAGE_DIR/config-goose" "$HOME/.config/goose")
+    bwrap_args+=(--bind "$JARVIS_STORAGE_DIR/${2}" "${1}")
+}
+
+add_goose_dir "$HOME/.config/goose" config-goose
+add_goose_dir "$HOME/.local/share/goose" share-goose
+add_goose_dir "$HOME/.local/cache/goose" cache-goose
 
 exec bwrap "${bwrap_args[@]}" "${goose_exe}" "${@}"

@@ -48,8 +48,8 @@ function add_crush_dir {
 }
 
 project_slug="$(echo "${JARVIS_SANDBOX_DIR}" | sed -E 's/\//_/g')"
-add_crush_dir "${JARVIS_SANDBOX_DIR}/.crush" per-project/"${project_slug}"
+add_crush_dir /crush-data per-project/"${project_slug}"
 add_crush_dir "$HOME/.config/crush" config-crush
 add_crush_dir "$HOME/.local/share/crush" share-crush
 
-exec bwrap "${bwrap_args[@]}" "${crush_exe}" "${@}"
+exec bwrap "${bwrap_args[@]}" "${crush_exe}" --data-dir /crush-data "${@}"

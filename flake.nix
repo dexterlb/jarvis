@@ -4,10 +4,12 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     utils.url = "github:numtide/flake-utils";
+    charmbracelet.url = "github:charmbracelet/nur";
+    charmbracelet.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { utils, nixpkgs, ... }:
+    { utils, nixpkgs, charmbracelet, ... }:
     utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (
       system:
       let
@@ -16,12 +18,21 @@
           config = {
             allowUnfree = true;
           };
+          overlays = [
+            charmbracelet.overlays.default
+          ];
         };
         lib = pkgs.lib;
         jarvisDeps = [
           pkgs.bubblewrap
-          pkgs.bash
           pkgs.which
+          pkgs.bash
+          pkgs.findutils
+          pkgs.coreutils
+          pkgs.util-linux
+          pkgs.curl
+          pkgs.ripgrep
+          pkgs.jq
         ];
         toolDeps = {
           claude = [
@@ -32,6 +43,9 @@
           ];
           goose = [
             pkgs.goose-cli
+          ];
+          crush = [
+            pkgs.crush
           ];
         };
         toolPkg = name: pkgs.stdenvNoCC.mkDerivation {

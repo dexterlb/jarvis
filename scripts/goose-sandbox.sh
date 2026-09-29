@@ -12,7 +12,6 @@ bwrap_args=(
 
     --cap-drop ALL
     --die-with-parent
-    --new-session
 
     --uid "$(id -u)"
     --gid "$(id -g)"

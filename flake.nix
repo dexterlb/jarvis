@@ -24,15 +24,28 @@
         };
         lib = pkgs.lib;
         jarvisDeps = [
-          pkgs.bubblewrap
-          pkgs.which
           pkgs.bash
-          pkgs.findutils
+          pkgs.bubblewrap
           pkgs.coreutils
-          pkgs.util-linux
           pkgs.curl
-          pkgs.ripgrep
+          pkgs.diffutils
+          pkgs.file
+          pkgs.findutils
+          pkgs.gawk
+          pkgs.gnugrep
+          pkgs.gnumake
+          pkgs.gnused
+          pkgs.gnutar
+          pkgs.gzip
           pkgs.jq
+          pkgs.less
+          pkgs.patch
+          pkgs.ripgrep
+          pkgs.tree
+          pkgs.util-linux
+          pkgs.which
+          pkgs.xxd
+          pkgs.python3
         ];
         toolDeps = {
           claude = [
